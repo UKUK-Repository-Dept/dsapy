@@ -68,9 +68,9 @@ class DSAPIRequests(object):
         DATA = json.dumps(data_dict)
 
         if item_handle is None:
-            ACTION = 'items/' + item_id + '/metadata'
+            ACTION = 'items/' + str(item_id) + '/metadata'
         else:
-            ACTION = 'handle/' + item_handle + '?expand=metadata'
+            ACTION = 'handle/' + str(item_handle) + '?expand=metadata'
 
         rqst_data = {'verb': VERB, 'action': ACTION, 'data': DATA}
 
