@@ -117,3 +117,18 @@ class DSAPIRequests(object):
 
         return rqst_data
 
+    @staticmethod
+    def get_items_in_collection(collection_id, limit=100):
+
+        VERB = 'GET'
+        if limit is None:
+            ACTION = 'collections/' + collection_id + '/items'
+        else:
+            ACTION = 'collections/' + collection_id + '/items' + '?limit=' + str(limit)
+
+        if collection_id is None:
+            raise Exception('get_items_in_collection: collection_id is None!')
+
+        rqst_data = {'verb': VERB, 'action': ACTION, 'data': '{}'}
+
+        return rqst_data
