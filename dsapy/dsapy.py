@@ -1,4 +1,6 @@
 import requests
+import json
+from xml.etree import ElementTree as ET
 from dsapy.requests.dsapy_requests import DSAPIRequests
 from dsapy.utils.utils import Utils
 
@@ -71,22 +73,15 @@ class DSpaceAPI(object):
 
             rqst_dict = DSAPIRequests.connect(email=self.username, password=self.password)
 
-            r = self.send_request(rqst_dict, c_type='json')
+            try:
+                print("Connecting to DSpace API...")
+                result = self.send_request(rqst_dict, c_type='json')
+                print("Connection request returned: ", result)
+                self.api_token = result['api-token']
+            except Exception as e:
+                print("Failed to connect to DSpace API because of the following reason: " + str(e))
+                raise e
 
-            print('__connect: result: ' + str(r))
-            if r.status_code == requests.codes.ok:
-                print("Connected to DSpace API - token: {}".format(r.text))
-                self.api_token = r.text
-                status_data = DSAPIRequests.status()
-                try:
-                    status = self.send_request(status_data, c_type='json')
-                    print(status.json())
-                except Exception as e:
-                    raise e
-
-                return r.text
-            else:
-                raise Exception('Failed to login to DSpace API')
         except Exception as e:
             raise e
 
@@ -112,24 +107,58 @@ class DSpaceAPI(object):
 
         # try to prepare headers
         try:
+            print("Creating request headers...")
             headers = Utils.prepare_headers(api_token=self.__api_token, content_type=content_type)
         except Exception as e:
             raise e
 
         # try to prepare request
         try:
+            print("Preparing request...")
             prepared_request = self.prepare_request(rqst_dict, headers)
         except Exception as e:
             raise e
 
         # try to send request and return result
         try:
+            print("Sending request...")
             s = requests.Session()
             result = s.send(prepared_request)
         except Exception as e:
             raise e
 
-        return result
+        try:
+            print("Processing response...")
+            final_result = self.__process_response(result, c_type)
+        except Exception as e:
+            raise e
+
+        return final_result
+
+    def __process_response(self, result, c_type):
+
+        print(result.url)
+
+        if result.status_code == requests.codes.ok:
+            print("Response status code: ", result.status_code)
+
+            if c_type is 'json':
+                # print("Result is: ", json.dumps(result.text))
+
+                if str(result.url).endswith('/login'):
+                    # we have to create a json string ourselves, because DSpace API returns text/plain when logging in
+                    final_result = json.loads('{"api-token":"' + result.text + '"}')
+                else:
+                    final_result = result.json()
+
+            elif c_type is 'xml':
+                final_result = ET.fromstring(result.text)
+            else:
+                raise Exception('Unknown content type ' + str(c_type))
+        else:
+            raise Exception(result.reason)
+
+        return final_result
 
     def prepare_request(self, rqst_dict, headers):
         """
