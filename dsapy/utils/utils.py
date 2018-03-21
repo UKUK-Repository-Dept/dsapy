@@ -114,3 +114,34 @@ class Utils(object):
 
         return True
 
+    @staticmethod
+    def get_metadata_value(metadata, field_name):
+
+        if not isinstance(metadata, list):
+            print('get_metadata_value: metadata object passed to get_metadata_value has to be an instance of a list')
+            raise Exception('get_metadata_value: metadata object passed to '
+                            'get_metadata_value has to be an instance of a list')
+
+        found_values = list()
+
+        for metadata_dict in metadata:
+            key = metadata_dict['key']
+            value = metadata_dict['value']
+            language = metadata_dict['language']
+
+            # check if currently processed metadata field is the same as requested field
+            if key == field_name:
+                # check if value is not 'empty', continue to next metadata dict if it is
+                if value == '':
+                    continue
+                else:
+                    # store found values of the requested metadata field
+                    found_values.append(value)
+
+            else:
+                continue
+        # returns list of found values (usable for searching for singular metadata field or multiple repeating fields)
+        # or an empty list
+        return found_values
+
+
