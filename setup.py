@@ -6,6 +6,6 @@ setup(name='dsapy',
       url='http://github.com/jrihak/dsapy',
       author='Jakub Řihák',
       license='MIT',
-      packages=['dsapy'],
+      packages=['dsapy', 'dsapy/requests', 'dsapy/utils'],
       install_requires=['requests'],
       zip_safe=False)
